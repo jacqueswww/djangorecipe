@@ -88,14 +88,13 @@ class Recipe(object):
         return script_paths
 
     def create_manage_script(self, extra_paths, ws):
-        project = self.options.get('projectegg', self.options['project'])
         return zc.buildout.easy_install.scripts(
             [(self.options.get('control-script', self.name),
               'djangorecipe.manage', 'main')],
             ws, sys.executable, self.options['bin-directory'],
             extra_paths=extra_paths,
             relative_paths=self._relative_paths,
-            arguments="'%s.%s'" % (project, self.options['settings']),
+            arguments="'%s'" % self.options['settings'],
             initialization=self.options['initialization'])
 
     def create_test_runner(self, extra_paths, working_set):
@@ -194,7 +193,9 @@ class Recipe(object):
         return scripts
 
     def get_extra_paths(self):
-        extra_paths = [self.buildout['buildout']['directory']]
+        extra_paths = []
+        if not self._relative_paths:
+            extra_paths.append(self.buildout['buildout']['directory'])
 
         # Add libraries found by a site .pth files to our extra-paths.
         if 'pth-files' in self.options:
